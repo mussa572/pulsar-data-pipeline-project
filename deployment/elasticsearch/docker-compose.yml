@@ -1,0 +1,34 @@
+version: "3.6"
+services:
+  elastic-node1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
+    container_name: elastic-node1
+    environment:
+      - discovery.type=single-node
+      - node.name=elastic-node1
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - network_test_bed
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.14.0
+    container_name: kibana
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_HOSTS: http://elastic-node1:9200
+    networks:
+      - network_test_bed
+
+networks:
+  network_test_bed:
+    name: network_test_bed
+    driver: bridge
